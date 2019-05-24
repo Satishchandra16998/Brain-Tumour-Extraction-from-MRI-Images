@@ -1,0 +1,48 @@
+library(imager)
+library(jpeg)
+
+#CONVERTING INTO BLACK AND WHITE 
+layout(t(1:2))
+im=load.image('Name of file(in jpeg format).jpg')
+plot(im)  
+im.g =grayscale(im)
+plot(im.g)
+
+#ADJUSTING THE LUMINANCE TREND
+df <- as.data.frame(im.g)
+head(df,5)
+m <- lm(value ~ x + y,data=df)
+summary(m)
+layout(t(1:2))
+im.f <- im.g-fitted(m)
+plot(im.g,main="Before")
+plot(im.f,main="After trend removal")
+
+#CHOOSING THE THRESHOLD VALUES EXPERIMENTAL
+layout(t(1:4))
+threshold(im.g,"40%") %>% plot
+threshold(im.g,"20%") %>% plot
+threshold(im.g,"10%") %>% plot
+#AUTO FILTERING
+threshold(im.f,thr = 'auto') %>% plot(main="Auto")
+
+
+#CONVERTING INTO PIXEL SETS
+im.t = threshold(im.g,"auto")
+px = as.pixset(1-im.t) #Convert to pixset
+plot(px)
+
+#GUASSIAN FILTER
+im.gu = grayscale(im)
+layout(t(1:2))
+deriche(im.gu,sigma=4,order=2,axis="y") %>% plot(main="2nd deriv of Gaussian along y")
+vanvliet(im.gu,sigma=4,order=2,axis="y") %>% plot(main="2nd deriv of Gaussian along y")
+
+
+#SHRINKING BY 3 PIXELS
+shrink(px,3) %>% plot(main="Shrinking by 3 pixels")
+
+#FINAL IMAGE ClEARLY SHOWING TUMOR
+plot(px,main = "Final Image")
+
+#END
